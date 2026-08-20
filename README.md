@@ -29,4 +29,4 @@ python3 scripts/vault.py orphans <vault>               # 检测孤立笔记
 
 ## 安装
 
-Release 中的 `hermes-obsidian-vault.skill` 文件可直接导入支持 Skill 的 agent 环境。
+将本仓库整个目录作为 skill 文件夹放入 agent 的 skills 目录（保持 `SKILL.md` 在根），或打包为 `.skill`（zip 格式）后导入支持 Skill 的 agent 环境。
