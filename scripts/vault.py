@@ -2,9 +2,9 @@
 """Hermes Obsidian 库操作脚本（仅依赖标准库）。
 
 用法：
-  python3 vault.py new    <vault> <相对路径.md> [--title T] [--type 盲区] [--subject 数学] [--status 待消化] [--source kimi] [--tags a,b] [--body 正文]
+  python3 vault.py new    <vault> <相对路径.md> [--title T] [--type 概念] [--subject 主题] [--status 状态] [--source web] [--tags a,b] [--body 正文]
   python3 vault.py find   <vault> <关键词>          # 写笔记前去重：搜标题与正文
-  python3 vault.py daily  <vault> [--text 追加内容]  # 追加到今日复盘日记（不存在则创建）
+  python3 vault.py daily  <vault> [--text 追加内容]  # 追加到今日日记（不存在则创建）
   python3 vault.py index  <vault> [--dir 子目录]     # 重建 MOC 索引笔记
   python3 vault.py orphans <vault>                  # 列出无任何入链的孤立笔记
 """
@@ -69,11 +69,11 @@ def cmd_find(a):
 def cmd_daily(a):
     vault = Path(a.vault)
     today = date.today().isoformat()
-    p = resolve(vault, f"30-日记/{today}.md")
+    p = resolve(vault, f"Daily/{today}.md")
     if not p.exists():
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(
-            f"---\ntitle: {today} 复盘\ntype: 复盘\ncreated: {today}\n---\n\n# {today} 复盘\n",
+            f"---\ntitle: {today} 日记\ntype: 日记\ncreated: {today}\n---\n\n# {today} 日记\n",
             encoding="utf-8",
         )
     if a.text:
@@ -87,7 +87,7 @@ def cmd_daily(a):
 def cmd_index(a):
     vault = Path(a.vault)
     target = vault / (a.dir or "")
-    notes = sorted(p for p in target.rglob("*.md") if "40-MOC" not in p.parts)
+    notes = sorted(p for p in target.rglob("*.md") if "MOC" not in p.parts)
     by_dir = {}
     for p in notes:
         by_dir.setdefault(p.parent.relative_to(vault), []).append(p)
@@ -97,7 +97,7 @@ def cmd_index(a):
         lines.append(f"## {d}")
         lines += [f"- [[{p.stem}]]" for p in ps]
         lines.append("")
-    out = resolve(vault, f"40-MOC/{(a.dir or '全库')}-索引.md")
+    out = resolve(vault, f"MOC/{(a.dir or '全库')}-索引.md")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text("\n".join(lines), encoding="utf-8")
     print(f"索引已重建：{out.relative_to(vault)}（{len(notes)} 篇）")
@@ -110,7 +110,7 @@ def cmd_orphans(a):
     for p in notes:
         linked.update(t.strip() for t in WIKILINK_RE.findall(p.read_text(encoding="utf-8", errors="ignore")))
     orphans = [p.relative_to(vault) for p in notes
-               if p.stem not in linked and "40-MOC" not in p.parts]
+               if p.stem not in linked and "MOC" not in p.parts]
     if not orphans:
         print("无孤立笔记，库连接良好。")
         return
